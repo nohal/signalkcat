@@ -2,7 +2,7 @@
 
 Tool to dump data served by a SignalK websocket server.
 
-[![Coverity Scan](https://img.shields.io/coverity/scan/8281.svg)]()
+[![Coverity Scan](https://img.shields.io/coverity/scan/8281.svg)](https://scan.coverity.com/projects/nohal-signalkcat)
 
 ## Usage:
 ```
