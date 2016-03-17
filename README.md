@@ -2,6 +2,8 @@
 
 Tool to dump data served by a SignalK websocket server.
 
+[![Coverity Scan](https://img.shields.io/coverity/scan/8281.svg)]()
+
 ## Usage:
 ```
 signalkcat <server host> [--port=<p>] [--ssl] [-k] [-v <ver>] [-d <log bitfield>] [-l]
