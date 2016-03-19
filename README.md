@@ -44,3 +44,6 @@ If you want to install the tool, invoke ```make install```
 
 ### MS Windows
 TBD
+
+## TODO
+* Switch to cmake
