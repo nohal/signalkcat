@@ -2,7 +2,7 @@
 
 Tool to dump data served by a SignalK websocket server.
 
-[![Build Status](https://travis-ci.org/nohal/signalkcat.svg?branch=master)](https://travis-ci.org/nohal/signalkcat
+[![Build Status](https://travis-ci.org/nohal/signalkcat.svg?branch=master)](https://travis-ci.org/nohal/signalkcat)
 [![Coverity Scan](https://img.shields.io/coverity/scan/8281.svg)](https://scan.coverity.com/projects/nohal-signalkcat)
 
 ## Usage:
