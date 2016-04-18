@@ -36,11 +36,42 @@
 
 #include <libwebsockets.h>
 
+static int
+websocket_write_back(struct lws *wsi_in, char *str, int str_size_in) 
+{
+    if (str == NULL || wsi_in == NULL)
+        return -1;
+
+    int n;
+    int len;
+    unsigned char *out = NULL;
+
+    if (str_size_in < 1) 
+        len = strlen(str);
+    else
+        len = str_size_in;
+
+    out = (unsigned char *)malloc(sizeof(char)*(LWS_SEND_BUFFER_PRE_PADDING + len + LWS_SEND_BUFFER_POST_PADDING));
+    //* setup the buffer*/
+    memcpy (out + LWS_SEND_BUFFER_PRE_PADDING, str, len );
+    //* write out*/
+    n = lws_write(wsi_in, out + LWS_SEND_BUFFER_PRE_PADDING, len, LWS_WRITE_TEXT);
+
+    char msg[strlen(str) + 1];
+    sprintf(msg, "%s\n", str);
+    lwsl_info(msg);
+    //* free the buffer*/
+    free(out);
+
+    return n;
+}
 
 static int deny_deflate, deny_mux, longlived;
 static struct lws *wsi_dump;
 static volatile int force_exit;
 static unsigned int opts;
+static int send_sub;
+static char *sub_msg;
 
 /*
  *
@@ -75,6 +106,17 @@ callback_sk_dump(struct lws *wsi, enum lws_callback_reasons reason,
             
         case LWS_CALLBACK_CLIENT_ESTABLISHED:
             lwsl_info("dump: LWS_CALLBACK_CLIENT_ESTABLISHED\n");
+            if( send_sub > 0 ) {
+                websocket_write_back(wsi, sub_msg, -1);
+            }
+            break;
+        
+        case LWS_CALLBACK_CLIENT_WRITEABLE:
+            lwsl_info("dump: LWS_CALLBACK_CLIENT_WRITEABLE\n");
+            break;
+        
+        case LWS_CALLBACK_SERVER_WRITEABLE:
+            lwsl_info("dump: LWS_CALLBACK_SERVER_WRITEABLE\n");
             break;
             
         case LWS_CALLBACK_CLOSED:
@@ -154,6 +196,7 @@ static struct option options[] = {
     { "undeflated",	no_argument,		NULL, 'u' },
     { "nomux",	no_argument,		NULL, 'n' },
     { "longlived",	no_argument,		NULL, 'l' },
+    { "sub-msg",        no_argument,    NULL, 'm' },
     { NULL, 0, 0, 0 }
 };
 
@@ -179,6 +222,7 @@ int main(int argc, char **argv)
     struct lws_context *context;
     int ietf_version = -1; /* latest */
     const char *address;
+    send_sub = 0;
     
     memset(&info, 0, sizeof info);
     
@@ -209,6 +253,10 @@ int main(int argc, char **argv)
                 break;
             case 'n':
                 deny_mux = 1;
+                break;
+            case 'm':
+                send_sub = 1;
+                sub_msg = "{\"context\": \"vessels\", \"subscribe\": [{ \"path\": \"*\"}]}";
                 break;
             case 'h':
                 goto usage;
@@ -283,6 +331,7 @@ usage:
     fprintf(stderr, "Usage: signalkcat "
             "<server host> [--port=<p>] "
             "[--ssl] [-n] [-l] [-u] [-v <ver>] "
-            "[-d <log bitfield>]\n");
+            "[-d <log bitfield>] "
+            "[--sub-msg]\n");
     return 1;
 }
